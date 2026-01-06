@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Real Estate Management</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="page-wrapper">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <a href="/" class="logo">RealEstate</a>
+                <nav class="nav">
+                    <a href="/user-dashboard.html" class="nav-link active">Dashboard</a>
+                    <a href="#" class="nav-link">My Properties</a>
+                    <a href="#" class="nav-link">Favorites</a>
+                    <a href="#" class="nav-link">Profile</a>
+                    <a href="/" class="nav-link">Logout</a>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="dashboard-container">
+            <!-- Welcome Section -->
+            <div class="welcome-section">
+                <h1>Welcome back, <span id="userName">User</span>!</h1>
+                <p class="text-secondary">Here's what's happening with your properties today</p>
+            </div>
+
+            <!-- Stats Overview -->
+            <div class="stats-grid">
+                <div class="stat-card primary">
+                    <div class="stat-value" id="totalProperties">0</div>
+                    <div class="stat-label">Total Properties</div>
+                </div>
+                <div class="stat-card success">
+                    <div class="stat-value" id="activeListings">0</div>
+                    <div class="stat-label">Active Listings</div>
+                </div>
+                <div class="stat-card info">
+                    <div class="stat-value" id="totalViews">0</div>
+                    <div class="stat-label">Total Views</div>
+                </div>
+                <div class="stat-card" style="background: #f5576c">
+                    <div class="stat-value" id="favorites">0</div>
+                    <div class="stat-label">Favorites</div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="section-header">
+                <h2>Quick Actions</h2>
+            </div>
+            <div class="card-grid mb-xl">
+                <div class="card">
+                    <h3>Add New Property</h3>
+                    <p class="text-secondary mb-md">List a new property on the platform</p>
+                    <button class="btn btn-primary btn-small">Add Property</button>
+                </div>
+                <div class="card">
+                    <h3>View Analytics</h3>
+                    <p class="text-secondary mb-md">Check performance metrics and insights</p>
+                    <button class="btn btn-secondary btn-small">View Analytics</button>
+                </div>
+                <div class="card">
+                    <h3>Messages</h3>
+                    <p class="text-secondary mb-md">Check your messages and inquiries</p>
+                    <button class="btn btn-secondary btn-small">View Messages</button>
+                </div>
+            </div>
+
+            <!-- Recent Properties -->
+            <div class="section-header">
+                <h2>My Recent Properties</h2>
+                <a href="#" class="link">View all</a>
+            </div>
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Property Name</th>
+                            <th>Location</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                            <th>Views</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="propertiesTable">
+                        <!-- Properties will be loaded dynamically from database -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script src="/public/js/dashboard.js"></script>
+</body>
+
+</html>

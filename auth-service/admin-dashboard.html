@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Real Estate Management</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="user-profile-mini">
+                <div class="avatar-large"></div>
+                <h3>Chestly Ace</h3>
+                <p class="text-secondary" style="font-size: 12px;">Welcome Back!</p>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active">
+                    <span class="nav-icon"><i class="fas fa-th-large"></i></span>
+                    Dashboard
+                </a>
+                <a href="#properties" class="nav-item">
+                    <span class="nav-icon"><i class="fas fa-building"></i></span>
+                    Properties
+                </a>
+                <a href="#contacts" class="nav-item">
+                    <span class="nav-icon"><i class="fas fa-address-book"></i></span>
+                    Contacts
+                </a>
+                <a href="#listings" class="nav-item">
+                    <span class="nav-icon"><i class="fas fa-list"></i></span>
+                    Listing
+                </a>
+                <a href="#clients" class="nav-item">
+                    <span class="nav-icon"><i class="fas fa-users"></i></span>
+                    Clients
+                </a>
+                <a href="#reports" class="nav-item">
+                    <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+                    Reports
+                </a>
+                <a href="#settings" class="nav-item">
+                    <span class="nav-icon"><i class="fas fa-cog"></i></span>
+                    Settings
+                </a>
+            </nav>
+
+            <div class="logout-section">
+                <a href="/" class="nav-item">
+                    <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
+                    Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-header">
+                <div class="header-greeting">
+                    <h1>Good Morning Chestly Ace</h1>
+                </div>
+                <div class="header-actions">
+                    <div class="search-bar">
+                        <i class="fas fa-search text-secondary"></i>
+                        <input type="text" class="search-input" placeholder="Search...">
+                    </div>
+                    <button class="icon-btn">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Dashboard Content -->
+            <div class="dashboard-scroll">
+                <!-- Promo Banner -->
+                <div class="promo-banner">
+                    <div class="banner-content">
+                        <h2 class="banner-title">Enjoy a Huge<br>Discount During This Offer.</h2>
+                        <button class="btn-white">Explore Now</button>
+                    </div>
+                    <img src="https://purepng.com/public/uploads/large/purepng.com-house-with-garagehousehomebuildinggarage-17015284852084o91f.png"
+                        alt="House" class="banner-image">
+                </div>
+
+                <div class="dashboard-grid">
+                    <!-- Left Column -->
+                    <div class="col-left">
+                        <!-- Stats Row -->
+                        <div class="stats-row">
+                            <div class="card">
+                                <div class="card-header">
+                                    <span class="card-title"><i class="fas fa-dollar-sign"></i> Total Revenue</span>
+                                    <i class="fas fa-ellipsis-h text-secondary"></i>
+                                </div>
+                                <div class="stat-amount">1,783,000 FCFA</div>
+                                <div class="stat-trend trend-up">
+                                    <i class="fas fa-arrow-up"></i> +28% <span class="text-secondary"
+                                        style="margin-left: 4px;">From last week</span>
+                                </div>
+                            </div>
+                            <div class="card">
+                                <div class="card-header">
+                                    <span class="card-title"><i class="fas fa-tools"></i> Maintenance Cost</span>
+                                    <i class="fas fa-ellipsis-h text-secondary"></i>
+                                </div>
+                                <div class="stat-amount">582,000 FCFA</div>
+                                <div class="stat-trend trend-up">
+                                    <i class="fas fa-arrow-up"></i> +15% <span class="text-secondary"
+                                        style="margin-left: 4px;">From last week</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Revenue Chart -->
+                        <div class="card">
+                            <div class="card-header">
+                                <div>
+                                    <h3>Total Revenue</h3>
+                                    <div class="text-secondary" style="font-size: 12px;">• Income • Expense</div>
+                                </div>
+                                <select
+                                    style="background: transparent; color: white; border: 1px solid #333; padding: 4px; border-radius: 4px;">
+                                    <option>2025</option>
+                                </select>
+                            </div>
+                            <div class="chart-container">
+                                <!-- Mock Bars -->
+                                <div class="bar" style="height: 40%"></div>
+                                <div class="bar" style="height: 60%"></div>
+                                <div class="bar" style="height: 45%"></div>
+                                <div class="bar active" style="height: 80%"></div>
+                                <div class="bar" style="height: 55%"></div>
+                                <div class="bar" style="height: 70%"></div>
+                                <div class="bar" style="height: 50%"></div>
+                            </div>
+                            <div
+                                style="display: flex; justify-content: space-between; margin-top: 10px; color: #666; font-size: 12px;">
+                                <span>February</span>
+                                <span>March</span>
+                                <span>April</span>
+                                <span>May</span>
+                                <span>June</span>
+                            </div>
+                        </div>
+
+                        <!-- Sales Report Table -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Sales Report</h3>
+                            </div>
+                            <div class="table-container">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Sales by</th>
+                                            <th>Email</th>
+                                            <th>Sales Type</th>
+                                            <th>Price</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <div class="user-cell">
+                                                    <div class="avatar-sm" style="background-image: url('')">
+                                                    </div>
+                                                    <span>Angel Zee</span>
+                                                </div>
+                                            </td>
+                                            <td>angelzee@gmail.com</td>
+                                            <td>Sale</td>
+                                            <td>100,234 FCFA</td>
+                                            <td><span class="status-badge status-paid">Paid</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="user-cell">
+                                                    <div class="avatar-sm" style="background-image: url('')">
+                                                    </div>
+                                                    <span>Yuven Carlson</span>
+                                                </div>
+                                            </td>
+                                            <td>yuven.carlson@gmail.com</td>
+                                            <td>Rent</td>
+                                            <td>2,010,000 FCFA</td>
+                                            <td><span class="status-badge status-pending">Pending</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="user-cell">
+                                                    <div class="avatar-sm" style="background-image: url('')">
+                                                    </div>
+                                                    <span>Michel varade</span>
+                                                </div>
+                                            </td>
+                                            <td>michel.varade@gmail.com</td>
+                                            <td>Rent</td>
+                                            <td>140,021 FCFA</td>
+                                            <td><span class="status-badge status-paid">Paid</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="col-right">
+                        <div class="card" style="background: transparent; border: none; padding: 0;">
+                            <div class="card-header" style="margin-bottom: 10px;">
+                                <h3>Property List</h3>
+                                <a href="#" class="text-secondary" style="font-size: 12px;">See All Listing</a>
+                            </div>
+                            <div class="property-list-widget">
+                                <div class="property-card-sm">
+                                    <div class="property-img"
+                                        style="background-image: url('https://images.unsplash.com/photo-1600596542815-22b5c1275efb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')">
+                                        <span class="badge-overlay">3 New Offers</span>
+                                    </div>
+                                    <div class="property-info">
+                                        <h4>Wisdom City - 1500SQ</h4>
+                                        <p class="text-secondary" style="font-size: 12px;">4576 Wisdom City, Yaounde</p>
+                                        Westmount
+                                        <div class="property-price">456,000 FCFA</div>
+                                    </div>
+                                </div>
+                                <div class="property-card-sm">
+                                    <div class="property-img"
+                                        style="background-image: url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')">
+                                        <span class="badge-overlay">1 New Offer</span>
+                                    </div>
+                                    <div class="property-info">
+                                        <h4>Main Street - 1850SQ</h4>
+                                        <p class="text-secondary" style="font-size: 12px;">7864 Main Street, Saont -
+                                            Laurent</p>
+                                        <div class="property-price">243,000 FCFA</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>Sales by Region</h3>
+                            </div>
+                            <div class="map-widget">
+                                <!-- Map placeholder -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/public/js/admin-dashboard.js"></script>
+</body>
+
+</html>

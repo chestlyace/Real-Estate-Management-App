@@ -1,0 +1,23 @@
+{
+  "name": "real-estate-management-app",
+  "version": "1.0.0",
+  "description": "This is a real estate management app for booking, listing, and rentals of short and long term leases across Cameroon",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "auth-service": "cd auth-service && npm start",
+    "install:all": "cd auth-service && npm install",
+    "dev": "concurrently \"npm run auth-service\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chestlyace/Real-Estate-Management-App.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/chestlyace/Real-Estate-Management-App/issues"
+  },
+  "homepage": "https://github.com/chestlyace/Real-Estate-Management-App#readme"
+}

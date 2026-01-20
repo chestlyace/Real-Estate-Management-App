@@ -6,6 +6,9 @@ const path = require('path');
 const config = require('./config/config');
 const authRoutes = require('./routes/auth.routes');
 const usersRoutes = require('./routes/users.routes');
+const adminRoutes = require('./routes/admin.routes');
+const propertyRoutes = require('./routes/property.routes');
+const kycRoutes = require('./routes/kyc.routes');
 const { initSchema } = require('./database/mysql');
 
 function createApp() {
@@ -49,6 +52,9 @@ function createApp() {
   // API Routes
   app.use('/v1/api/auth', authRoutes);
   app.use('/v1/api/users', usersRoutes);
+  app.use('/v1/api/admin', adminRoutes);
+  app.use('/v1/api/properties', propertyRoutes);
+  app.use('/v1/api/kyc', kycRoutes);
 
   // Serve static frontend files (index.html, register.html, dashboard.html) from project root
   const staticDir = path.join(__dirname, '..');
@@ -71,7 +77,7 @@ function createApp() {
   app.get('/user-dashboard.html', (req, res) => {
     res.sendFile(path.join(staticDir, 'user-dashboard.html'));
   });
-  
+
   app.get('/admin-dashboard.html', (req, res) => {
     res.sendFile(path.join(staticDir, 'admin-dashboard.html'));
   });

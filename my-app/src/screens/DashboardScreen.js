@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     View,
     Text,
@@ -9,105 +9,288 @@ import {
     TextInput,
     Image,
     Dimensions,
+    RefreshControl,
+    ActivityIndicator,
+
+    Platform,
+    Modal,
+    Slider
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { propertyService } from '../services/property.service';
 
 const { width } = Dimensions.get('window');
 
 const DashboardScreen = ({ navigation }) => {
-    const [selectedCategory, setSelectedCategory] = useState('House');
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [properties, setProperties] = useState([]);
+    const [featured, setFeatured] = useState([]);
+    const [selectedCategory, setSelectedCategory] = useState('All');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+    const [modalVisible, setModalVisible] = useState(false);
+    const [priceRange, setPriceRange] = useState({ min: 0, max: 10000000 });
+    const [activeCity, setActiveCity] = useState(null);
+
+    // Data Loading
+    // Data Loading
+    const loadHomeData = useCallback(async (query = '', category = 'All', city = null, min = 0, max = 10000000) => {
+        try {
+            setLoading(true);
+            const filters = {};
+            if (query) filters.search = query;
+            if (min > 0) filters.minPrice = min;
+            if (max < 10000000) filters.maxPrice = max;
+            if (city) filters.city = city;
+
+            if (category !== 'All') {
+                const typeMap = {
+                    'House': 'house',
+                    'Apartment': 'apartment',
+                    'Villa': 'house',
+                    'Land': 'land'
+                };
+                filters.propertyType = typeMap[category] || category.toLowerCase();
+            }
+
+            const data = await propertyService.getAllProperties(filters);
+            setProperties(data);
+            // Update active city state if provided
+            if (city) setActiveCity(city);
+
+            if (!query && category === 'All' && !city && featured.length === 0) {
+                setFeatured(data.slice(0, 5));
+            }
+        } catch (error) {
+            console.error('Failed to load home data', error);
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
+    }, [featured.length]);
+
+
+
+    // Debounce Search Effect
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearchQuery(searchQuery);
+        }, 500);
+
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+    // Main Data Loading Effect
+    useEffect(() => {
+        loadHomeData(debouncedSearchQuery, selectedCategory, activeCity);
+    }, [loadHomeData, debouncedSearchQuery, selectedCategory, activeCity]);
+
+    // Actually, for better UX let's debounce or just search on submit. 
+    // Let's rely on onSubmitEditing for search and useEffect for Category.
+
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+        loadHomeData(debouncedSearchQuery, selectedCategory, activeCity);
+    }, [loadHomeData, debouncedSearchQuery, selectedCategory, activeCity]);
+
+    const handleSearch = () => {
+        loadHomeData(searchQuery, selectedCategory, activeCity);
+    };
+
+    const handleCategorySelect = (category) => {
+        setSelectedCategory(category);
+        // Effect will trigger loadHomeData
+    };
+
+    const applyFilters = () => {
+        setModalVisible(false);
+        loadHomeData(searchQuery, selectedCategory, activeCity, priceRange.min, priceRange.max);
+    };
 
     const categories = [
-        { id: 1, title: 'House', icon: 'home-outline' },
-        { id: 2, title: 'Villa', icon: 'business-outline' }, // closest for Villa
-        { id: 3, title: 'Apartment', icon: 'business' },
-        { id: 4, title: 'Bungalow', icon: 'home' },
+        { id: 'all', title: 'All', icon: 'grid-outline' },
+        { id: 'house', title: 'House', icon: 'home-outline' },
+        { id: 'apartment', title: 'Apartment', icon: 'business-outline' },
+        { id: 'villa', title: 'Villa', icon: 'star-outline' }, // Mapped to house or special type
+        { id: 'land', title: 'Land', icon: 'leaf-outline' },
     ];
 
-    const recommended = [
-        {
-            id: 1,
-            title: 'Wisdom City Apartments',
-            type: 'Apartment',
-            price: '550,000 FCFA',
-            location: 'Yaounde',
-            rating: 4.5,
-            image: null, // Placeholder
-        },
-        {
-            id: 2,
-            title: 'Oakleaf Cottage',
-            type: 'Home',
-            price: '2,000,000 FCFA',
-            location: 'Douala ',
-            rating: 4.8,
-            image: null, // Placeholder
-        },
+    const CAMEROON_CITIES = [
+        { id: 1, name: 'Yaoundé', image: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=500' },
+        { id: 2, name: 'Douala', image: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=500' },
+        { id: 3, name: 'Bamenda', image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=500' },
+        { id: 4, name: 'Limbe', image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=500' },
+        { id: 5, name: 'Buea', image: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=500' },
     ];
 
-    const nearby = [
-        {
-            id: 1,
-            title: 'BlissView Villa',
-            type: 'Villa',
-            location: 'New York, USA',
-            rating: 4.9,
-            image: null,
-        },
-        {
-            id: 2,
-            title: 'Skyline Lofts',
-            type: 'Apartment',
-            location: 'Manhattan, NY',
-            rating: 4.7,
-            image: null,
-        }
-    ];
+    // Removed client-side filtering execution
+    // const filterProperties = () => { ... } 
+    // const displayProperties = filterProperties();
+    const displayProperties = properties;
+
+
 
     return (
         <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="light-content" />
+            <StatusBar barStyle="light-content" backgroundColor="#121212" />
 
             {/* Main Scroll Content */}
-            <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+            <ScrollView
+                contentContainerStyle={styles.scrollContainer}
+                showsVerticalScrollIndicator={false}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#4A90E2" />
+                }
+            >
 
                 {/* Header */}
                 <View style={styles.header}>
                     <View>
-                        <Text style={styles.locationLabel}>Location</Text>
+                        <Text style={styles.locationLabel}>Current Location</Text>
                         <View style={styles.locationRow}>
-                            <Text style={styles.locationText}>Yaounde, Cameroon</Text>
-                            <Ionicons name="chevron-down" size={12} color="#FFFFFF" />
+                            <Ionicons name="location" size={18} color="#4A90E2" />
+                            <Text style={styles.locationText}>Yaoundé, Cameroon</Text>
+                            <Ionicons name="chevron-down" size={14} color="#A0A0A0" />
                         </View>
                     </View>
                     <TouchableOpacity style={styles.notificationButton}>
-                        <Ionicons name="notifications-outline" size={20} color="#FFFFFF" />
+                        <Ionicons name="notifications-outline" size={24} color="#FFFFFF" />
                         <View style={styles.notificationDot} />
                     </TouchableOpacity>
                 </View>
 
-                {/* Search Bar */}
+                {/* Enhanced Search Bar */}
                 <View style={styles.searchContainer}>
-                    <View style={styles.searchInputContainer}>
-                        <Ionicons name="search" size={16} color="#666" style={styles.searchIcon} />
-                        <TextInput
-                            style={styles.searchInput}
-                            placeholder="Search"
-                            placeholderTextColor="#666"
-                        />
+                    <View style={styles.searchBarWrapper}>
+                        <View style={styles.searchRow}>
+                            <TouchableOpacity onPress={() => handleSearch()}>
+                                <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
+                            </TouchableOpacity>
+                            <TextInput
+                                style={styles.searchInput}
+                                placeholder="Search location, property..."
+                                placeholderTextColor="#666"
+                                value={searchQuery}
+                                onChangeText={setSearchQuery}
+                                onSubmitEditing={handleSearch}
+                                returnKeyType="search"
+                            />
+                        </View>
+                        <View style={styles.divider} />
+                        <View style={styles.dateRow}>
+                            <Ionicons name="calendar-outline" size={18} color="#666" style={styles.searchIcon} />
+                            <Text style={styles.datePlaceholder}>Any Date</Text>
+                        </View>
                     </View>
-                    <TouchableOpacity style={styles.filterButton}>
-                        <Ionicons name="options-outline" size={20} color="#FFF" />
+                    <TouchableOpacity style={styles.filterButton} onPress={() => setModalVisible(true)}>
+                        <Ionicons name="options-outline" size={22} color="#FFF" />
                     </TouchableOpacity>
                 </View>
 
-                {/* Categories */}
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    style={styles.categoriesContainer}
+                {/* Filter Modal */}
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={modalVisible}
+                    onRequestClose={() => setModalVisible(false)}
                 >
+                    <View style={styles.modalContainer}>
+                        <View style={styles.modalContent}>
+                            <View style={styles.modalHeader}>
+                                <Text style={styles.modalTitle}>Filters</Text>
+                                <TouchableOpacity onPress={() => setModalVisible(false)}>
+                                    <Ionicons name="close" size={24} color="#FFF" />
+                                </TouchableOpacity>
+                            </View>
+
+                            <Text style={styles.filterLabel}>Price Range (FCFA)</Text>
+                            <View style={styles.priceInputs}>
+                                <TextInput
+                                    style={styles.priceInput}
+                                    placeholder="Min"
+                                    placeholderTextColor="#666"
+                                    keyboardType="numeric"
+                                    onChangeText={(val) => setPriceRange(prev => ({ ...prev, min: parseInt(val) || 0 }))}
+                                />
+                                <Text style={{ color: '#666' }}>-</Text>
+                                <TextInput
+                                    style={styles.priceInput}
+                                    placeholder="Max"
+                                    placeholderTextColor="#666"
+                                    keyboardType="numeric"
+                                    onChangeText={(val) => setPriceRange(prev => ({ ...prev, max: parseInt(val) || 10000000 }))}
+                                />
+                            </View>
+
+                            <TouchableOpacity style={styles.applyButton} onPress={applyFilters}>
+                                <Text style={styles.applyButtonText}>Apply Filters</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </Modal>
+
+                {/* Recent Searches / Activity */}
+                <View style={styles.recentContainer}>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                        <TouchableOpacity style={styles.recentChip}>
+                            <Ionicons name="time-outline" size={14} color="#A0A0A0" />
+                            <Text style={styles.recentText}>2 Bedroom Douala</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.recentChip}>
+                            <Ionicons name="time-outline" size={14} color="#A0A0A0" />
+                            <Text style={styles.recentText}>Villa Yaoundé</Text>
+                        </TouchableOpacity>
+                    </ScrollView>
+                </View>
+
+                {/* Promotional Banner */}
+                <View style={styles.promoBanner}>
+                    <View style={styles.promoContent}>
+                        <Text style={styles.promoTitle}>Summer Deal</Text>
+                        <Text style={styles.promoText}>Get 10% off on your first rental!</Text>
+                    </View>
+                    <Image
+                        source={{ uri: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=500' }}
+                        style={styles.promoImage}
+                    />
+                </View>
+
+
+                {/* Featured Properties */}
+                <View style={styles.sectionHeader}>
+                    <Text style={styles.sectionTitle}>Featured Properties</Text>
+                    <TouchableOpacity>
+                        <Text style={styles.seeAllText}>See all</Text>
+                    </TouchableOpacity>
+                </View>
+
+                {loading ? (
+                    <ActivityIndicator size="large" color="#4A90E2" style={{ marginVertical: 20 }} />
+                ) : (
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.featuredContainer}>
+                        {featured.map((item) => (
+                            <TouchableOpacity key={item.id} style={styles.featuredCard} onPress={() => navigation.navigate('PropertyDetails', { property: item })}>
+                                <Image source={{ uri: item.image_url }} style={styles.featuredImage} />
+                                <View style={styles.featuredOverlay}>
+                                    <View style={styles.featuredPriceTag}>
+                                        <Text style={styles.featuredPriceText}>{parseInt(item.price).toLocaleString()} FCFA</Text>
+                                    </View>
+                                    <Text style={styles.featuredTitle}>{item.name}</Text>
+                                    <Text style={styles.featuredLocation}>{item.city}</Text>
+                                </View>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+                )}
+
+
+                {/* Browse by City */}
+                <View style={styles.sectionHeader}>
+                    <Text style={styles.sectionTitle}>Explore Categories</Text>
+                </View>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesContainer}>
                     {categories.map((category) => (
                         <TouchableOpacity
                             key={category.id}
@@ -115,7 +298,7 @@ const DashboardScreen = ({ navigation }) => {
                                 styles.categoryCard,
                                 selectedCategory === category.title && styles.categorySelected
                             ]}
-                            onPress={() => setSelectedCategory(category.title)}
+                            onPress={() => handleCategorySelect(category.title)}
                         >
                             <View style={[
                                 styles.categoryIconContainer,
@@ -133,102 +316,56 @@ const DashboardScreen = ({ navigation }) => {
                     ))}
                 </ScrollView>
 
-                {/* Recommended Section */}
+                {/* Explore by City Section */}
                 <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>Recommended Property</Text>
-                    <TouchableOpacity>
-                        <Text style={styles.seeAllText}>See all</Text>
-                    </TouchableOpacity>
+                    <Text style={styles.sectionTitle}>Explore by City</Text>
                 </View>
-
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    style={styles.recommendedContainer}
-                >
-                    {recommended.map((item) => (
-                        <TouchableOpacity key={item.id} style={styles.recommendedCard}>
-                            <View style={styles.imagePlaceholder}>
-                                <TouchableOpacity style={styles.favoriteButton}>
-                                    <Ionicons name="heart-outline" size={16} color="#FFF" />
-                                </TouchableOpacity>
-                            </View>
-                            <View style={styles.cardContent}>
-                                <View style={styles.typeRow}>
-                                    <View style={styles.typeTag}>
-                                        <Text style={styles.typeText}>{item.type}</Text>
-                                    </View>
-                                    <View style={styles.ratingRow}>
-                                        <Ionicons name="star" size={10} color="#FFD700" style={{ marginRight: 4 }} />
-                                        <Text style={styles.ratingText}>{item.rating}</Text>
-                                    </View>
-                                </View>
-                                <Text style={styles.propertyTitle}>{item.title}</Text>
-                                <View style={styles.locationRowCard}>
-                                    <Ionicons name="location-outline" size={12} color="#A0A0A0" style={{ marginRight: 4 }} />
-                                    <Text style={styles.cardLocation}>{item.location}</Text>
-                                </View>
-                                <Text style={styles.priceText}>
-                                    {item.price}<Text style={styles.perMonth}>/month</Text>
-                                </Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.citiesContainer}>
+                    {CAMEROON_CITIES.map((city) => (
+                        <TouchableOpacity key={city.id} style={styles.cityCard} onPress={() => loadHomeData(searchQuery, selectedCategory, city.name)}>
+                            <Image source={{ uri: city.image }} style={styles.cityImage} />
+                            <View style={styles.cityOverlay}>
+                                <Text style={styles.cityName}>{city.name}</Text>
                             </View>
                         </TouchableOpacity>
                     ))}
                 </ScrollView>
 
-                {/* Nearby Section */}
+
+                {/* Recommended / Filtered Section */}
                 <View style={styles.sectionHeader}>
-                    <Text style={styles.sectionTitle}>Nearby Property</Text>
+                    <Text style={styles.sectionTitle}>Recommended for you</Text>
                     <TouchableOpacity>
                         <Text style={styles.seeAllText}>See all</Text>
                     </TouchableOpacity>
                 </View>
 
                 <View style={styles.nearbyContainer}>
-                    {nearby.map((item) => (
-                        <TouchableOpacity key={item.id} style={styles.nearbyCard}>
-                            <View style={styles.nearbyImagePlaceholder} />
+                    {displayProperties.map((item) => (
+                        <TouchableOpacity key={item.id} style={styles.nearbyCard} onPress={() => navigation.navigate('PropertyDetails', { property: item })}>
+                            <Image source={{ uri: item.image_url }} style={styles.nearbyImage} />
                             <View style={styles.nearbyContent}>
                                 <View style={styles.nearbyTag}>
-                                    <Text style={styles.typeText}>{item.type}</Text>
+                                    <Text style={styles.typeText}>{item.property_type}</Text>
                                 </View>
-                                <Text style={styles.nearbyTitle}>{item.title}</Text>
-                                <View style={styles.ratingRow}>
-                                    <Ionicons name="star" size={10} color="#FFD700" style={{ marginRight: 4 }} />
-                                    <Text style={styles.ratingText}>{item.rating}</Text>
+                                <Text style={styles.nearbyTitle}>{item.name}</Text>
+                                <View style={styles.locationRowCard}>
+                                    <Ionicons name="location-outline" size={12} color="#A0A0A0" style={{ marginRight: 4 }} />
+                                    <Text style={styles.cardLocation}>{item.location}</Text>
                                 </View>
+                                <Text style={styles.priceText}>
+                                    {parseInt(item.price).toLocaleString()} <Text style={styles.perMonth}>FCFA{item.listing_type === 'rent' ? '/mo' : ''}</Text>
+                                </Text>
                             </View>
                         </TouchableOpacity>
                     ))}
+                    {displayProperties.length === 0 && (
+                        <Text style={{ color: '#666', textAlign: 'center', marginTop: 20 }}>No properties found in this category.</Text>
+                    )}
                 </View>
 
-                {/* Spacer for Bottom Nav */}
-                <View style={{ height: 80 }} />
+                <View style={{ height: 20 }} />
             </ScrollView>
-
-            {/* Bottom Navigation (Custom) */}
-            <View style={styles.bottomNav}>
-                <TouchableOpacity style={styles.navItem}>
-                    <Ionicons name="home" size={24} color="#4A90E2" style={{ marginBottom: 4 }} />
-                    <Text style={[styles.navLabel, styles.navSelected]}>Home</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.navItem}>
-                    <Ionicons name="search-outline" size={24} color="#A0A0A0" style={{ marginBottom: 4 }} />
-                    <Text style={styles.navLabel}>Explore</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.navItem}>
-                    <Ionicons name="heart-outline" size={24} color="#A0A0A0" style={{ marginBottom: 4 }} />
-                    <Text style={styles.navLabel}>Favorite</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.navItem}>
-                    <Ionicons name="chatbubble-outline" size={24} color="#A0A0A0" style={{ marginBottom: 4 }} />
-                    <Text style={styles.navLabel}>Chat</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Profile')}>
-                    <Ionicons name="person-outline" size={24} color="#A0A0A0" style={{ marginBottom: 4 }} />
-                    <Text style={styles.navLabel}>Profile</Text>
-                </TouchableOpacity>
-            </View>
         </SafeAreaView>
     );
 };
@@ -239,13 +376,14 @@ const styles = StyleSheet.create({
         backgroundColor: '#121212',
     },
     scrollContainer: {
-        padding: 24,
+        padding: 20,
+        paddingBottom: 40,
     },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 24,
+        marginBottom: 20,
     },
     locationLabel: {
         color: '#A0A0A0',
@@ -255,16 +393,12 @@ const styles = StyleSheet.create({
     locationRow: {
         flexDirection: 'row',
         alignItems: 'center',
+        gap: 4
     },
     locationText: {
         color: '#FFFFFF',
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: 'bold',
-        marginRight: 6,
-    },
-    dropdownIcon: {
-        color: '#FFFFFF',
-        fontSize: 12,
     },
     notificationButton: {
         width: 40,
@@ -276,9 +410,6 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#333',
     },
-    notificationIcon: {
-        fontSize: 20,
-    },
     notificationDot: {
         position: 'absolute',
         top: 8,
@@ -286,45 +417,170 @@ const styles = StyleSheet.create({
         width: 8,
         height: 8,
         borderRadius: 4,
-        backgroundColor: 'red',
+        backgroundColor: '#FF3B30',
         borderWidth: 1,
         borderColor: '#1E1E1E',
     },
     searchContainer: {
         flexDirection: 'row',
-        marginBottom: 24,
+        marginBottom: 16,
+        gap: 12
     },
-    searchInputContainer: {
+    searchBarWrapper: {
         flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
         backgroundColor: '#1E1E1E',
-        borderRadius: 12,
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        marginRight: 12,
+        borderRadius: 16,
         borderWidth: 1,
         borderColor: '#333',
+        padding: 12,
+    },
+    searchRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    divider: {
+        height: 1,
+        backgroundColor: '#333',
+        marginVertical: 8,
+    },
+    dateRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
     },
     searchIcon: {
         marginRight: 10,
-        fontSize: 16,
     },
     searchInput: {
         flex: 1,
         color: '#FFFFFF',
         fontSize: 16,
+        padding: 0,
+    },
+    datePlaceholder: {
+        color: '#A0A0A0',
+        fontSize: 14,
     },
     filterButton: {
         width: 50,
+        height: 50,
         backgroundColor: '#4A90E2',
-        borderRadius: 12,
+        borderRadius: 16,
         justifyContent: 'center',
         alignItems: 'center',
+        alignSelf: 'flex-start'
     },
-    filterIcon: {
-        fontSize: 20,
+    recentContainer: {
+        marginBottom: 20,
+    },
+    recentChip: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#1E1E1E',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 20,
+        marginRight: 10,
+        borderWidth: 1,
+        borderColor: '#333',
+        gap: 6
+    },
+    recentText: {
+        color: '#A0A0A0',
+        fontSize: 12,
+    },
+    promoBanner: {
+        backgroundColor: '#1E1E1E',
+        borderRadius: 20,
+        padding: 20,
+        marginBottom: 24,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        borderWidth: 1,
+        borderColor: '#333',
+        overflow: 'hidden',
+    },
+    promoContent: {
+        flex: 1,
+        paddingRight: 10,
+    },
+    promoTitle: {
         color: '#FFF',
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 4,
+    },
+    promoText: {
+        color: '#A0A0A0',
+        fontSize: 12,
+    },
+    promoImage: {
+        width: 80,
+        height: 80,
+        borderRadius: 10,
+    },
+    sectionHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#FFFFFF',
+    },
+    seeAllText: {
+        color: '#4A90E2',
+        fontSize: 14,
+    },
+    featuredContainer: {
+        marginBottom: 24,
+    },
+    featuredCard: {
+        width: 250,
+        height: 180,
+        marginRight: 16,
+        borderRadius: 20,
+        overflow: 'hidden',
+        backgroundColor: '#1E1E1E',
+    },
+    featuredImage: {
+        width: '100%',
+        height: '100%',
+    },
+    featuredOverlay: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        padding: 12,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+    },
+    featuredTitle: {
+        color: '#FFF',
+        fontSize: 16,
+        fontWeight: 'bold',
+        marginBottom: 2,
+    },
+    featuredLocation: {
+        color: '#DDD',
+        fontSize: 12,
+    },
+    featuredPriceTag: {
+        position: 'absolute',
+        top: -120,
+        right: 12,
+        backgroundColor: '#4A90E2',
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: 12,
+    },
+    featuredPriceText: {
+        color: '#FFF',
+        fontSize: 12,
+        fontWeight: 'bold',
     },
     categoriesContainer: {
         marginBottom: 24,
@@ -349,15 +605,9 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#333',
     },
-    categoryIcon: {
-        fontSize: 24,
-    },
     categoryTitle: {
         fontSize: 12,
         fontWeight: '500',
-    },
-    categorySelected: {
-
     },
     textSelected: {
         color: '#FFFFFF',
@@ -366,116 +616,34 @@ const styles = StyleSheet.create({
     textUnselected: {
         color: '#A0A0A0',
     },
-    sectionHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 16,
-    },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#FFFFFF',
-    },
-    seeAllText: {
-        color: '#4A90E2',
-        fontSize: 14,
-    },
-    recommendedContainer: {
+    citiesContainer: {
         marginBottom: 24,
-        overflow: 'visible',
     },
-    recommendedCard: {
-        width: width * 0.6,
-        backgroundColor: '#1E1E1E',
-        borderRadius: 20,
-        marginRight: 16,
-        padding: 12,
-        borderWidth: 1,
-        borderColor: '#333',
-    },
-    imagePlaceholder: {
-        width: '100%',
+    cityCard: {
+        width: 120,
         height: 150,
-        backgroundColor: '#2C2C2C',
         borderRadius: 16,
-        marginBottom: 12,
-        justifyContent: 'flex-start',
-        alignItems: 'flex-end',
-        padding: 10,
+        marginRight: 12,
+        overflow: 'hidden',
+        backgroundColor: '#1E1E1E',
     },
-    favoriteButton: {
-        width: 30,
-        height: 30,
-        borderRadius: 15,
-        backgroundColor: 'rgba(255,255,255,0.2)',
-        justifyContent: 'center',
+    cityImage: {
+        width: '100%',
+        height: '100%',
+    },
+    cityOverlay: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        padding: 8,
+        backgroundColor: 'rgba(0,0,0,0.5)',
         alignItems: 'center',
     },
-    heartIcon: {
+    cityName: {
         color: '#FFF',
-        fontSize: 16,
-    },
-    cardContent: {
-        paddingHorizontal: 4,
-    },
-    typeRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 8,
-    },
-    typeTag: {
-        backgroundColor: 'rgba(74, 144, 226, 0.1)',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 6,
-    },
-    typeText: {
-        color: '#4A90E2',
-        fontSize: 10,
+        fontSize: 14,
         fontWeight: 'bold',
-    },
-    ratingRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    starIcon: {
-        fontSize: 10,
-        marginRight: 4,
-    },
-    ratingText: {
-        color: '#FFFFFF',
-        fontSize: 12,
-        fontWeight: 'bold',
-    },
-    propertyTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#FFFFFF',
-        marginBottom: 4,
-    },
-    locationRowCard: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 8,
-    },
-    pinIcon: {
-        fontSize: 12,
-        marginRight: 4,
-    },
-    cardLocation: {
-        fontSize: 12,
-        color: '#A0A0A0',
-    },
-    priceText: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#4A90E2',
-    },
-    perMonth: {
-        fontSize: 12,
-        color: '#A0A0A0',
-        fontWeight: 'normal',
     },
     nearbyContainer: {
         marginBottom: 20,
@@ -489,10 +657,9 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#333',
     },
-    nearbyImagePlaceholder: {
-        width: 80,
-        height: 80,
-        backgroundColor: '#2C2C2C',
+    nearbyImage: {
+        width: 100,
+        height: 100,
         borderRadius: 12,
         marginRight: 16,
     },
@@ -512,7 +679,26 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
         color: '#FFFFFF',
+        marginBottom: 6,
+    },
+    locationRowCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
         marginBottom: 8,
+    },
+    cardLocation: {
+        fontSize: 12,
+        color: '#A0A0A0',
+    },
+    priceText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#4A90E2',
+    },
+    perMonth: {
+        fontSize: 12,
+        color: '#A0A0A0',
+        fontWeight: 'normal',
     },
     bottomNav: {
         position: 'absolute',
@@ -523,17 +709,12 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-around',
         paddingVertical: 16,
-        paddingBottom: 24, // For iPhone X safe area
+        paddingBottom: Platform.OS === 'ios' ? 24 : 16,
         borderTopWidth: 1,
         borderTopColor: '#333',
     },
     navItem: {
         alignItems: 'center',
-    },
-    navIcon: {
-        fontSize: 24,
-        color: '#A0A0A0',
-        marginBottom: 4,
     },
     navLabel: {
         fontSize: 10,
@@ -542,6 +723,65 @@ const styles = StyleSheet.create({
     navSelected: {
         color: '#4A90E2',
     },
+    typeText: {
+        color: '#4A90E2',
+        fontSize: 10,
+        fontWeight: '700',
+        textTransform: 'capitalize'
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'flex-end',
+        backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    modalContent: {
+        backgroundColor: '#1E1E1E',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        padding: 20,
+        minHeight: 300,
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    modalTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#FFF',
+    },
+    filterLabel: {
+        color: '#A0A0A0',
+        marginBottom: 10,
+    },
+    priceInputs: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    priceInput: {
+        backgroundColor: '#121212',
+        width: '45%',
+        padding: 12,
+        borderRadius: 10,
+        color: '#FFF',
+        borderWidth: 1,
+        borderColor: '#333'
+    },
+    applyButton: {
+        backgroundColor: '#4A90E2',
+        padding: 16,
+        borderRadius: 12,
+        alignItems: 'center',
+    },
+    applyButtonText: {
+        color: '#FFF',
+        fontWeight: 'bold',
+        fontSize: 16,
+    }
 });
 
 export default DashboardScreen;

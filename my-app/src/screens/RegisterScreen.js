@@ -87,7 +87,7 @@ const RegisterScreen = ({ navigation }) => {
 
     const handleRegister = async () => {
         // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/3dbf4cb5-9697-44ff-9f6f-78a8643f9769',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RegisterScreen.js:handleRegister:entry',message:'handleRegister called',data:{hasAccountType:!!accountType,termsAccepted:termsAccepted,hasName:!!name,hasEmail:!!email,hasPassword:!!password,hasPhoneNumber:!!phoneNumber,hasDateOfBirth:!!dateOfBirth},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+        fetch('http://127.0.0.1:7242/ingest/3dbf4cb5-9697-44ff-9f6f-78a8643f9769', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'RegisterScreen.js:handleRegister:entry', message: 'handleRegister called', data: { hasAccountType: !!accountType, termsAccepted: termsAccepted, hasName: !!name, hasEmail: !!email, hasPassword: !!password, hasPhoneNumber: !!phoneNumber, hasDateOfBirth: !!dateOfBirth }, timestamp: Date.now(), sessionId: 'debug-session', runId: 'run1', hypothesisId: 'A' }) }).catch(() => { });
         // #endregion
         if (!accountType) {
             Alert.alert('Error', 'Please select an account type');
@@ -109,23 +109,23 @@ const RegisterScreen = ({ navigation }) => {
                 accountType,
             };
             // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/3dbf4cb5-9697-44ff-9f6f-78a8643f9769',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RegisterScreen.js:handleRegister:before-call',message:'Before calling authService.register',data:{registrationData:registrationData,dateOfBirthType:typeof dateOfBirth,dateOfBirthValue:dateOfBirth instanceof Date ? dateOfBirth.toISOString() : dateOfBirth},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+            fetch('http://127.0.0.1:7242/ingest/3dbf4cb5-9697-44ff-9f6f-78a8643f9769', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'RegisterScreen.js:handleRegister:before-call', message: 'Before calling authService.register', data: { registrationData: registrationData, dateOfBirthType: typeof dateOfBirth, dateOfBirthValue: dateOfBirth instanceof Date ? dateOfBirth.toISOString() : dateOfBirth }, timestamp: Date.now(), sessionId: 'debug-session', runId: 'run1', hypothesisId: 'A' }) }).catch(() => { });
             // #endregion
 
             const response = await authService.register(registrationData);
             // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/3dbf4cb5-9697-44ff-9f6f-78a8643f9769',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RegisterScreen.js:handleRegister:success',message:'Registration successful',data:{hasResponse:!!response,responseStatus:response?.status,hasData:!!response?.data},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+            fetch('http://127.0.0.1:7242/ingest/3dbf4cb5-9697-44ff-9f6f-78a8643f9769', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'RegisterScreen.js:handleRegister:success', message: 'Registration successful', data: { hasResponse: !!response, responseStatus: response?.status, hasData: !!response?.data }, timestamp: Date.now(), sessionId: 'debug-session', runId: 'run1', hypothesisId: 'C' }) }).catch(() => { });
             // #endregion
             console.log('Registration successful:', response);
 
             // Navigate directly to Dashboard as requested
             navigation.reset({
                 index: 0,
-                routes: [{ name: 'Dashboard' }],
+                routes: [{ name: 'Main' }],
             });
         } catch (error) {
             // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/3dbf4cb5-9697-44ff-9f6f-78a8643f9769',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'RegisterScreen.js:handleRegister:error',message:'Registration error in handleRegister',data:{name:error.name,message:error.message,stack:error.stack?.substring(0,200)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+            fetch('http://127.0.0.1:7242/ingest/3dbf4cb5-9697-44ff-9f6f-78a8643f9769', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'RegisterScreen.js:handleRegister:error', message: 'Registration error in handleRegister', data: { name: error.name, message: error.message, stack: error.stack?.substring(0, 200) }, timestamp: Date.now(), sessionId: 'debug-session', runId: 'run1', hypothesisId: 'D' }) }).catch(() => { });
             // #endregion
             Alert.alert('Registration Failed', error.message);
         } finally {

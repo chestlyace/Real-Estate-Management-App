@@ -42,6 +42,7 @@ const ProfileScreen = ({ navigation }) => {
         { id: 3, title: 'Language', icon: 'globe-outline' },
         { id: 4, title: 'Privacy', icon: 'lock-closed-outline' },
         { id: 5, title: 'Become a Host', icon: 'home-outline' },
+        { id: 6, title: 'Identity Verification', icon: 'shield-checkmark-outline', route: 'KYC' },
     ];
 
     const handleLogout = async () => {
@@ -62,9 +63,7 @@ const ProfileScreen = ({ navigation }) => {
 
             {/* Header */}
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
-                </TouchableOpacity>
+                <View style={{ width: 24 }} />
                 <Text style={styles.headerTitle}>My Profile</Text>
                 <TouchableOpacity style={styles.settingsButton}>
                     <Ionicons name="settings-sharp" size={24} color="#FFFFFF" />
@@ -106,7 +105,11 @@ const ProfileScreen = ({ navigation }) => {
                 {/* Menu Items */}
                 <View style={styles.menuContainer}>
                     {menuItems.map((item) => (
-                        <TouchableOpacity key={item.id} style={styles.menuItem}>
+                        <TouchableOpacity
+                            key={item.id}
+                            style={styles.menuItem}
+                            onPress={() => item.route ? navigation.navigate(item.route) : null}
+                        >
                             <View style={styles.menuLeft}>
                                 <View style={styles.iconContainer}>
                                     <Ionicons name={item.icon} size={22} color="#FFFFFF" />

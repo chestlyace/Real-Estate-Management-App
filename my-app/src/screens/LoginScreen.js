@@ -30,7 +30,7 @@ const LoginScreen = ({ navigation }) => {
             const response = await authService.login(email, password);
             console.log('Login successful:', response);
             // You might want to store the token here using AsyncStorage
-            navigation.replace('Dashboard');
+            navigation.replace('Main');
         } catch (error) {
             Alert.alert('Login Failed', error.message);
         } finally {

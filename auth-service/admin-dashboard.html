@@ -10,13 +10,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
-<body>
-    <div class="app-container">
+<body>      --+-1/  
+    <div class="app-+ontainer">
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="user-profile-mini">
                 <div class="avatar-large"></div>
-                <h3>Chestly Ace</h3>
+                <h3 id="userName">Admin</h3>
                 <p class="text-secondary" style="font-size: 12px;">Welcome Back!</p>
             </div>
 
@@ -33,7 +33,7 @@
                     <span class="nav-icon"><i class="fas fa-address-book"></i></span>
                     Contacts
                 </a>
-                <a href="#listings" class="nav-item">
+                <a href="#listings" class="nav item">
                     <span class="nav-icon"><i class="fas fa-list"></i></span>
                     Listing
                 </a>
@@ -64,7 +64,7 @@
             <!-- Header -->
             <header class="top-header">
                 <div class="header-greeting">
-                    <h1>Good Morning Chestly Ace</h1>
+                    <h1 id="greetingText">Good Morning</h1>
                 </div>
                 <div class="header-actions">
                     <div class="search-bar">
@@ -99,9 +99,9 @@
                                     <span class="card-title"><i class="fas fa-dollar-sign"></i> Total Revenue</span>
                                     <i class="fas fa-ellipsis-h text-secondary"></i>
                                 </div>
-                                <div class="stat-amount">1,783,000 FCFA</div>
-                                <div class="stat-trend trend-up">
-                                    <i class="fas fa-arrow-up"></i> +28% <span class="text-secondary"
+                                <div class="stat-amount" id="totalRevenue">0 FCFA</div>
+                                <div class="stat-trend" id="revenueTrend">
+                                    <i class="fas fa-arrow-up"></i> <span id="revenueChange">0%</span> <span class="text-secondary"
                                         style="margin-left: 4px;">From last week</span>
                                 </div>
                             </div>
@@ -110,9 +110,9 @@
                                     <span class="card-title"><i class="fas fa-tools"></i> Maintenance Cost</span>
                                     <i class="fas fa-ellipsis-h text-secondary"></i>
                                 </div>
-                                <div class="stat-amount">582,000 FCFA</div>
-                                <div class="stat-trend trend-up">
-                                    <i class="fas fa-arrow-up"></i> +15% <span class="text-secondary"
+                                <div class="stat-amount" id="maintenanceCost">0 FCFA</div>
+                                <div class="stat-trend" id="maintenanceTrend">
+                                    <i class="fas fa-arrow-up"></i> <span id="maintenanceChange">0%</span> <span class="text-secondary"
                                         style="margin-left: 4px;">From last week</span>
                                 </div>
                             </div>
@@ -130,23 +130,13 @@
                                     <option>2025</option>
                                 </select>
                             </div>
-                            <div class="chart-container">
-                                <!-- Mock Bars -->
-                                <div class="bar" style="height: 40%"></div>
-                                <div class="bar" style="height: 60%"></div>
-                                <div class="bar" style="height: 45%"></div>
-                                <div class="bar active" style="height: 80%"></div>
-                                <div class="bar" style="height: 55%"></div>
-                                <div class="bar" style="height: 70%"></div>
-                                <div class="bar" style="height: 50%"></div>
+                            <div class="chart-container" id="revenueChart">
+                                <!-- Chart bars will be dynamically generated -->
                             </div>
                             <div
-                                style="display: flex; justify-content: space-between; margin-top: 10px; color: #666; font-size: 12px;">
-                                <span>February</span>
-                                <span>March</span>
-                                <span>April</span>
-                                <span>May</span>
-                                <span>June</span>
+                                style="display: flex; justify-content: space-between; margin-top: 10px; color: #666; font-size: 12px;"
+                                id="chartLabels">
+                                <!-- Chart labels will be dynamically generated -->
                             </div>
                         </div>
 
@@ -166,46 +156,8 @@
                                             <th>Status</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>
-                                                <div class="user-cell">
-                                                    <div class="avatar-sm" style="background-image: url('')">
-                                                    </div>
-                                                    <span>Angel Zee</span>
-                                                </div>
-                                            </td>
-                                            <td>angelzee@gmail.com</td>
-                                            <td>Sale</td>
-                                            <td>100,234 FCFA</td>
-                                            <td><span class="status-badge status-paid">Paid</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <div class="user-cell">
-                                                    <div class="avatar-sm" style="background-image: url('')">
-                                                    </div>
-                                                    <span>Yuven Carlson</span>
-                                                </div>
-                                            </td>
-                                            <td>yuven.carlson@gmail.com</td>
-                                            <td>Rent</td>
-                                            <td>2,010,000 FCFA</td>
-                                            <td><span class="status-badge status-pending">Pending</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <div class="user-cell">
-                                                    <div class="avatar-sm" style="background-image: url('')">
-                                                    </div>
-                                                    <span>Michel varade</span>
-                                                </div>
-                                            </td>
-                                            <td>michel.varade@gmail.com</td>
-                                            <td>Rent</td>
-                                            <td>140,021 FCFA</td>
-                                            <td><span class="status-badge status-paid">Paid</span></td>
-                                        </tr>
+                                    <tbody id="salesReportTable">
+                                        <!-- Sales report data will be loaded dynamically -->
                                     </tbody>
                                 </table>
                             </div>
@@ -219,31 +171,8 @@
                                 <h3>Property List</h3>
                                 <a href="#" class="text-secondary" style="font-size: 12px;">See All Listing</a>
                             </div>
-                            <div class="property-list-widget">
-                                <div class="property-card-sm">
-                                    <div class="property-img"
-                                        style="background-image: url('https://images.unsplash.com/photo-1600596542815-22b5c1275efb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')">
-                                        <span class="badge-overlay">3 New Offers</span>
-                                    </div>
-                                    <div class="property-info">
-                                        <h4>Wisdom City - 1500SQ</h4>
-                                        <p class="text-secondary" style="font-size: 12px;">4576 Wisdom City, Yaounde</p>
-                                        Westmount
-                                        <div class="property-price">456,000 FCFA</div>
-                                    </div>
-                                </div>
-                                <div class="property-card-sm">
-                                    <div class="property-img"
-                                        style="background-image: url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80')">
-                                        <span class="badge-overlay">1 New Offer</span>
-                                    </div>
-                                    <div class="property-info">
-                                        <h4>Main Street - 1850SQ</h4>
-                                        <p class="text-secondary" style="font-size: 12px;">7864 Main Street, Saont -
-                                            Laurent</p>
-                                        <div class="property-price">243,000 FCFA</div>
-                                    </div>
-                                </div>
+                            <div class="property-list-widget" id="propertyListWidget">
+                                <!-- Property list will be loaded dynamically -->
                             </div>
                         </div>
 
